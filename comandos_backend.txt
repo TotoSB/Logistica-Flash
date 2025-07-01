@@ -1,0 +1,55 @@
+COMANDOS PARA EJECUTAR EL BACKEND DE LOGÍSTICA FLASH
+========================================================
+
+REQUISITOS PREVIOS:
+------------------
+- Python instalado en el sistema
+- Entorno virtual activado (.venv)
+
+COMANDOS PARA EJECUTAR EL BACKEND:
+---------------------------------
+
+1. NAVEGAR AL DIRECTORIO DEL BACKEND:
+   cd C:\Users\Alejo\Documents\GitHub\Logistica-Flash\logistica
+
+2. EJECUTAR EL SERVIDOR DE DJANGO:
+   C:\Users\Alejo\Documents\GitHub\Logistica-Flash\.venv\Scripts\python.exe manage.py runserver
+
+COMANDOS ADICIONALES ÚTILES:
+----------------------------
+
+3. CREAR MIGRACIONES (si cambias modelos):
+   C:\Users\Alejo\Documents\GitHub\Logistica-Flash\.venv\Scripts\python.exe manage.py makemigrations
+
+4. APLICAR MIGRACIONES:
+   C:\Users\Alejo\Documents\GitHub\Logistica-Flash\.venv\Scripts\python.exe manage.py migrate
+
+5. CREAR SUPERUSUARIO:
+   C:\Users\Alejo\Documents\GitHub\Logistica-Flash\.venv\Scripts\python.exe manage.py createsuperuser
+
+6. VERIFICAR ESTRUCTURA DE LA BASE DE DATOS:
+   C:\Users\Alejo\Documents\GitHub\Logistica-Flash\.venv\Scripts\python.exe manage.py dbshell
+
+URLs IMPORTANTES:
+----------------
+- Servidor backend: http://127.0.0.1:8000/
+- Panel de administración: http://127.0.0.1:8000/admin/
+- API endpoints: http://127.0.0.1:8000/api/
+
+ENDPOINTS DE LA API:
+-------------------
+- POST /api/register/ - Registrar nuevo usuario
+- POST /api/login/ - Iniciar sesión
+- POST /api/logout/ - Cerrar sesión
+- GET /api/user-status/ - Estado del usuario
+- GET /api/ - Información de la API
+
+CREDENCIALES ADMIN:
+------------------
+Email: acap5483@gmail.com
+Password: (la que configuraste)
+
+NOTA: 
+----
+El servidor debe estar corriendo para que el frontend pueda conectarse.
+El backend corre en el puerto 8000 por defecto.
