@@ -2,10 +2,13 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import classes from '../styles/login.module.css';
 
-function Login() {
+function Register() {
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: '',
+    nombre_completo: '',
+    telefono: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,28 +29,44 @@ function Login() {
     setLoading(true);
     setError('');
 
+    // Validar que las contraseñas coincidan
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      setLoading(false);
+      return;
+    }
+
+    // Validar longitud mínima de contraseña
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/login/', {
+      const response = await fetch('http://127.0.0.1:8000/api/register/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Para incluir cookies de sesión
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          nombre_completo: formData.nombre_completo,
+          telefono: formData.telefono
+        })
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('¡Login exitoso! Redirigiendo...');
-        // Guardar información del usuario en localStorage
-        localStorage.setItem('user', JSON.stringify(data.user));
-        // Redirigir al home después de 2 segundos
+        setSuccess('¡Cuenta creada exitosamente! Redirigiendo al login...');
+        // Redirigir al login después de 2 segundos
         setTimeout(() => {
-          navigate('/');
+          navigate('/login');
         }, 2000);
       } else {
-        setError(data.error || 'Error al iniciar sesión');
+        setError(data.error || 'Error al crear la cuenta');
       }
     } catch (error) {
       setError('Error de conexión. Verifica que el servidor esté funcionando.');
@@ -63,6 +82,10 @@ function Login() {
         </header>
         <main className={classes.main}>
             <form className={classes.form} onSubmit={handleSubmit}>
+                <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#000' }}>
+                  Crear Cuenta
+                </h2>
+                
                 {error && (
                   <div style={{
                     backgroundColor: '#ff4757',
@@ -89,6 +112,17 @@ function Login() {
                   </div>
                 )}
 
+                <label htmlFor="nombre_completo">Nombre completo:</label>
+                <input 
+                  type="text" 
+                  name="nombre_completo" 
+                  id="nombre_completo"
+                  value={formData.nombre_completo}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                />
+
                 <label htmlFor="email">Correo electrónico:</label>
                 <input 
                   type="email" 
@@ -97,6 +131,16 @@ function Login() {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  disabled={loading}
+                />
+
+                <label htmlFor="telefono">Teléfono (opcional):</label>
+                <input 
+                  type="tel" 
+                  name="telefono" 
+                  id="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
                   disabled={loading}
                 />
 
@@ -109,6 +153,18 @@ function Login() {
                   onChange={handleChange}
                   required
                   disabled={loading}
+                  minLength="6"
+                />
+
+                <label htmlFor="confirmPassword">Confirmar contraseña:</label>
+                <input 
+                  type="password" 
+                  name="confirmPassword" 
+                  id="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
                 />
 
                 <button 
@@ -116,11 +172,11 @@ function Login() {
                   className={classes.sub_login}
                   disabled={loading}
                 >
-                  {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                  {loading ? 'Creando cuenta...' : 'Crear cuenta'}
                 </button>
                 
                 <div style={{ textAlign: 'center', marginTop: '15px' }}>
-                  <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
+                  <p>¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link></p>
                 </div>
             </form>
         </main>
@@ -128,4 +184,4 @@ function Login() {
   )
 }
 
-export default Login
+export default Register

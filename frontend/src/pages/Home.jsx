@@ -1,8 +1,56 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import classes from '../styles/home.module.css';
 import { Link } from 'react-router-dom';
 
 function Home() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Verificar si hay un usuario guardado en localStorage
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+    
+    // También verificar con el servidor
+    checkUserStatus();
+  }, []);
+
+  const checkUserStatus = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/user-status/', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      
+      if (data.authenticated) {
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      } else {
+        setUser(null);
+        localStorage.removeItem('user');
+      }
+    } catch (error) {
+      console.log('Error verificando estado del usuario:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('http://127.0.0.1:8000/api/logout/', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      setUser(null);
+      localStorage.removeItem('user');
+    } catch (error) {
+      console.log('Error al cerrar sesión:', error);
+    }
+  };
+
   return (
     <>
            <header className={classes.header}>
@@ -18,7 +66,20 @@ function Home() {
               <li><a href="#estadisticas">Estadísticas</a></li>
               <li><a href="#contacto">Contacto</a></li>
             </ul>
-            <Link to="/login" className={classes.btn_login}>Iniciar Sesión</Link>
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ color: '#000' }}>Hola, {user.nombre_completo}</span>
+                <button 
+                  onClick={handleLogout}
+                  className={classes.btn_login}
+                  style={{ backgroundColor: '#ff4757', border: 'none' }}
+                >
+                  Cerrar Sesión
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className={classes.btn_login}>Iniciar Sesión</Link>
+            )}
           </nav>
           <div className={classes.menu_toggle}>
             <span></span>
@@ -33,6 +94,20 @@ function Home() {
           <div className={classes.hero_content}>
             <h1>Soluciones logísticas para hacer crecer tu negocio</h1>
             <p>Optimizamos tu cadena de suministro con tecnología avanzada y una red global de distribución confiable.</p>
+            {user ? (
+              <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#2ed573', color: 'white', borderRadius: '8px' }}>
+                <h3>✅ ¡Bienvenido de vuelta, {user.nombre_completo}!</h3>
+                <p>Email: {user.email}</p>
+                <p>Ahora puedes acceder a todos nuestros servicios</p>
+              </div>
+            ) : (
+              <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#ffeaa7', color: '#000', borderRadius: '8px' }}>
+                <h3>🔐 Inicia sesión para acceder a todos los servicios</h3>
+                <Link to="/register" style={{ color: '#0984e3', textDecoration: 'underline' }}>
+                  ¿No tienes cuenta? Regístrate aquí
+                </Link>
+              </div>
+            )}
             <div className={classes.hero_buttons}>
               <a href="#" className={classes.btn_primary}>Solicitar cotización</a>
               <a href="#" className={classes.btn_outline}>Conocer más</a>
