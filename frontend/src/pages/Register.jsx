@@ -28,6 +28,14 @@ function Register() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
+
+    // Validar que los campos requeridos no estén vacíos
+    if (!formData.email.trim() || !formData.password.trim() || !formData.nombre_completo.trim()) {
+      setError('Todos los campos obligatorios deben estar completos');
+      setLoading(false);
+      return;
+    }
 
     // Validar que las contraseñas coincidan
     if (formData.password !== formData.confirmPassword) {
@@ -61,7 +69,6 @@ function Register() {
 
       if (response.ok) {
         setSuccess('¡Cuenta creada exitosamente! Redirigiendo al login...');
-        // Redirigir al login después de 2 segundos
         setTimeout(() => {
           navigate('/login');
         }, 2000);
@@ -74,6 +81,7 @@ function Register() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className={classes.container_login}>

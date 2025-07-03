@@ -1,22 +1,17 @@
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login, logout
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+import json
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-import json
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from django.contrib.auth import authenticate
+from .models import Usuario
 
-# Create your views here.
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def home_view(request):
-    """
-    Vista de inicio - información sobre la API
-    """
     return Response({
         'message': 'Bienvenido a la API de Logística Flash',
         'version': '1.0.0',
@@ -29,30 +24,29 @@ def home_view(request):
         }
     }, status=status.HTTP_200_OK)
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
     """
-    Vista para el login de usuarios
+    Login con JWT - retorna access y refresh tokens
     """
     try:
         data = json.loads(request.body)
         email = data.get('email')
         password = data.get('password')
-        
+
         if not email or not password:
-            return Response({
-                'error': 'Email y contraseña son requeridos'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Autenticar usuario
+            return Response({'error': 'Email y contraseña requeridos'}, status=status.HTTP_400_BAD_REQUEST)
+
         user = authenticate(request, username=email, password=password)
-        
+
         if user is not None:
             if user.activo:
-                login(request, user)
+                refresh = RefreshToken.for_user(user)
                 return Response({
-                    'message': 'Login exitoso',
+                    'access': str(refresh.access_token),
+                    'refresh': str(refresh),
                     'user': {
                         'id': user.id,
                         'email': user.email,
@@ -61,102 +55,78 @@ def login_view(request):
                     }
                 }, status=status.HTTP_200_OK)
             else:
-                return Response({
-                    'error': 'Usuario inactivo'
-                }, status=status.HTTP_403_FORBIDDEN)
+                return Response({'error': 'Usuario inactivo'}, status=status.HTTP_403_FORBIDDEN)
         else:
-            return Response({
-                'error': 'Credenciales inválidas'
-            }, status=status.HTTP_401_UNAUTHORIZED)
-            
-    except json.JSONDecodeError:
-        return Response({
-            'error': 'Formato JSON inválido'
-        }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
     except Exception as e:
-        return Response({
-            'error': 'Error interno del servidor'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': f'Error interno: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def logout_view(request):
     """
-    Vista para cerrar sesión
+    Logout JWT - invalida todos los tokens del usuario
     """
-    logout(request)
-    return Response({
-        'message': 'Logout exitoso'
-    }, status=status.HTTP_200_OK)
+    try:
+        tokens = OutstandingToken.objects.filter(user=request.user)
+        for token in tokens:
+            BlacklistedToken.objects.get_or_create(token=token)
+
+        return Response({'message': 'Logout exitoso'}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'error': f'Error al cerrar sesión: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def user_status(request):
-    """
-    Vista para verificar el estado de autenticación del usuario
-    """
-    if request.user.is_authenticated:
-        return Response({
-            'authenticated': True,
-            'user': {
-                'id': request.user.id,
-                'email': request.user.email,
-                'nombre_completo': request.user.nombre_completo,
-                'is_staff': request.user.is_staff
-            }
-        }, status=status.HTTP_200_OK)
-    else:
-        return Response({
-            'authenticated': False
-        }, status=status.HTTP_200_OK)
+    return Response({
+        'authenticated': True,
+        'user': {
+            'id': request.user.id,
+            'email': request.user.email,
+            'nombre_completo': request.user.nombre_completo,
+            'is_staff': request.user.is_staff
+        }
+    }, status=200)
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
-    """
-    Vista para registrar nuevos usuarios
-    """
     try:
         data = json.loads(request.body)
         email = data.get('email')
         password = data.get('password')
         nombre_completo = data.get('nombre_completo')
         telefono = data.get('telefono', '')
-        
-        # Validaciones básicas
+
         if not email or not password or not nombre_completo:
-            return Response({
-                'error': 'Email, contraseña y nombre completo son requeridos'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Verificar si el usuario ya existe
-        from .models import Usuario
+            return Response({'error': 'Email, contraseña y nombre completo son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
+
         if Usuario.objects.filter(email=email).exists():
-            return Response({
-                'error': 'Ya existe un usuario con este email'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Crear nuevo usuario
+            return Response({'error': 'Ya existe un usuario con este email'}, status=status.HTTP_400_BAD_REQUEST)
+
         user = Usuario.objects.create_user(
-            username=email,  # Usamos email como username también
+            username=email,
             email=email,
             password=password,
             nombre_completo=nombre_completo,
             telefono=telefono
         )
-        
+
         return Response({
-            'message': 'Usuario creado exitosamente',
+            'message': 'Usuario registrado exitosamente',
             'user': {
                 'id': user.id,
                 'email': user.email,
-                'nombre_completo': user.nombre_completo,
+                'nombre_completo': user.nombre_completo
             }
         }, status=status.HTTP_201_CREATED)
-        
-    except json.JSONDecodeError:
-        return Response({
-            'error': 'Formato JSON inválido'
-        }, status=status.HTTP_400_BAD_REQUEST)
+
     except Exception as e:
-        return Response({
-            'error': f'Error interno del servidor: {str(e)}'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': f'Error interno del servidor: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

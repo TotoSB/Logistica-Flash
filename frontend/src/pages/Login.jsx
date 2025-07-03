@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import classes from '../styles/login.module.css';
 
@@ -17,7 +17,6 @@ function Login() {
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Limpiar errores al escribir
     if (error) setError('');
   };
 
@@ -32,7 +31,6 @@ function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Para incluir cookies de sesión
         body: JSON.stringify(formData)
       });
 
@@ -40,12 +38,15 @@ function Login() {
 
       if (response.ok) {
         setSuccess('¡Login exitoso! Redirigiendo...');
-        // Guardar información del usuario en localStorage
+
+        // Guardar tokens y usuario en localStorage
+        localStorage.setItem('accessToken', data.access);
+        localStorage.setItem('refreshToken', data.refresh);
         localStorage.setItem('user', JSON.stringify(data.user));
-        // Redirigir al home después de 2 segundos
+
         setTimeout(() => {
           navigate('/');
-        }, 2000);
+        }, 1500);
       } else {
         setError(data.error || 'Error al iniciar sesión');
       }
@@ -58,74 +59,74 @@ function Login() {
 
   return (
     <div className={classes.container_login}>
-        <header>
-            <Link to="/">Volver</Link>
-        </header>
-        <main className={classes.main}>
-            <form className={classes.form} onSubmit={handleSubmit}>
-                {error && (
-                  <div style={{
-                    backgroundColor: '#ff4757',
-                    color: 'white',
-                    padding: '10px',
-                    borderRadius: '5px',
-                    marginBottom: '15px',
-                    textAlign: 'center'
-                  }}>
-                    {error}
-                  </div>
-                )}
-                
-                {success && (
-                  <div style={{
-                    backgroundColor: '#2ed573',
-                    color: 'white',
-                    padding: '10px',
-                    borderRadius: '5px',
-                    marginBottom: '15px',
-                    textAlign: 'center'
-                  }}>
-                    {success}
-                  </div>
-                )}
+      <header>
+        <Link to="/">Volver</Link>
+      </header>
+      <main className={classes.main}>
+        <form className={classes.form} onSubmit={handleSubmit}>
+          {error && (
+            <div style={{
+              backgroundColor: '#ff4757',
+              color: 'white',
+              padding: '10px',
+              borderRadius: '5px',
+              marginBottom: '15px',
+              textAlign: 'center'
+            }}>
+              {error}
+            </div>
+          )}
 
-                <label htmlFor="email">Correo electrónico:</label>
-                <input 
-                  type="email" 
-                  name="email" 
-                  id="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                />
+          {success && (
+            <div style={{
+              backgroundColor: '#2ed573',
+              color: 'white',
+              padding: '10px',
+              borderRadius: '5px',
+              marginBottom: '15px',
+              textAlign: 'center'
+            }}>
+              {success}
+            </div>
+          )}
 
-                <label htmlFor="password">Contraseña:</label>
-                <input 
-                  type="password" 
-                  name="password" 
-                  id="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                />
+          <label htmlFor="email">Correo electrónico:</label>
+          <input 
+            type="email" 
+            name="email" 
+            id="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            disabled={loading}
+          />
 
-                <button 
-                  type="submit" 
-                  className={classes.sub_login}
-                  disabled={loading}
-                >
-                  {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-                </button>
-                
-                <div style={{ textAlign: 'center', marginTop: '15px' }}>
-                  <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
-                </div>
-            </form>
-        </main>
+          <label htmlFor="password">Contraseña:</label>
+          <input 
+            type="password" 
+            name="password" 
+            id="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            disabled={loading}
+          />
+
+          <button 
+            type="submit" 
+            className={classes.sub_login}
+            disabled={loading}
+          >
+            {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+          </button>
+
+          <div style={{ textAlign: 'center', marginTop: '15px' }}>
+            <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
+          </div>
+        </form>
+      </main>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;

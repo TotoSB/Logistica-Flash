@@ -18,13 +18,25 @@ function Home() {
   }, []);
 
   const checkUserStatus = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setUser(null);
+      localStorage.removeItem('user');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch('http://127.0.0.1:8000/api/user-status/', {
-        credentials: 'include'
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
+
       const data = await response.json();
-      
-      if (data.authenticated) {
+
+      if (response.ok && data.authenticated) {
         setUser(data.user);
         localStorage.setItem('user', JSON.stringify(data.user));
       } else {
@@ -33,22 +45,19 @@ function Home() {
       }
     } catch (error) {
       console.log('Error verificando estado del usuario:', error);
+      setUser(null);
+      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch('http://127.0.0.1:8000/api/logout/', {
-        method: 'POST',
-        credentials: 'include'
-      });
-      setUser(null);
-      localStorage.removeItem('user');
-    } catch (error) {
-      console.log('Error al cerrar sesión:', error);
-    }
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
   };
 
   return (
