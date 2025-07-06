@@ -122,6 +122,14 @@ function Login() {
 
           <div style={{ textAlign: 'center', marginTop: '15px' }}>
             <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
+            <p>
+              <Link 
+                to="/forgot-password" 
+                style={{ color: '#ff4757', textDecoration: 'none' }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </p>
           </div>
         </form>
       </main>

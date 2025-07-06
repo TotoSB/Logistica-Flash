@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*egv!jh%=wc5r6!g$o7b7^(g2+%*s4hf54fi4-&j67)z3i+g))'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-*egv!jh%=wc5r6!g$o7b7^(g2+%*s4hf54fi4-&j67)z3i+g))')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'app',
 ]
@@ -61,7 +64,7 @@ ROOT_URLCONF = 'logistica.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Agregar directorio de templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -153,6 +156,37 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
-INSTALLED_APPS += [
-    'rest_framework_simplejwt.token_blacklist',
-]
+# Configuración de Email
+# Para desarrollo - muestra emails en consola (por defecto)
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+
+# Configuración SMTP para producción
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+
+# Email por defecto
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Logística Flash <logisticaflash@gmail.com>')
+
+# URL del frontend para enlaces en emails
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
+
+# Configuración de logging para emails
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'app.email_utils': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
