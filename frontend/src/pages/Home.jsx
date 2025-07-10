@@ -103,7 +103,7 @@ function Home() {
           <div className={classes.hero_content}>
             <h1>Soluciones logísticas para hacer crecer tu negocio</h1>
             <p>Optimizamos tu cadena de suministro con tecnología avanzada y una red global de distribución confiable.</p>
-            {user ? (
+            {/* {user ? (
               <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#2ed573', color: 'white', borderRadius: '8px' }}>
                 <h3>✅ ¡Bienvenido de vuelta, {user.nombre_completo}!</h3>
                 <p>Email: {user.email}</p>
@@ -116,7 +116,7 @@ function Home() {
                   ¿No tienes cuenta? Regístrate aquí
                 </Link>
               </div>
-            )}
+            )} */}
             <div className={classes.hero_buttons}>
               <a href="#" className={classes.btn_primary}>Solicitar cotización</a>
               <a href="#" className={classes.btn_outline}>Conocer más</a>
