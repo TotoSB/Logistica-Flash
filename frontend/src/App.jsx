@@ -7,6 +7,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import EnvioForm from './pages/EnvioForm';
+import Admin from './pages/Admin';
 
 function App() {
 
@@ -15,9 +17,12 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/envio-form" element={<EnvioForm />} />
+          {/* Puedes agregar más rutas aquí según sea necesario */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path='/admin/*' element={<Admin />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
       </BrowserRouter>

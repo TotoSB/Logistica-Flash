@@ -1,0 +1,109 @@
+.envio-form {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 2rem; /* usando rem para consistencia */
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-family: 'Roboto', sans-serif; /* igual que el body */
+  background-color: var(--white);
+  box-shadow: var(--shadow);
+  color: var(--gray-800);
+}
+
+.envio-form__group {
+  margin-bottom: 1rem;
+}
+
+.envio-form__label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700; /* más consistente con h1-h6 */
+  color: var(--primary-dark);
+  font-size: 1rem;
+}
+
+.envio-form__input,
+.envio-form__select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-300);
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.envio-form__input:focus,
+.envio-form__select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 5px var(--accent);
+  background-color: var(--gray-100);
+}
+
+.envio-form__select {
+  background-color: var(--white);
+}
+
+.envio-form__button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+  color: var(--white);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+.envio-form__button--cotizar {
+  background: linear-gradient(to right, var(--accent), var(--accent-dark));
+}
+
+.envio-form__button--cotizar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 217, 110, 0.4);
+}
+
+.envio-form__button--enviar {
+  background: linear-gradient(to right, #28a745, #1e7e34);
+}
+
+.envio-form__button--enviar:hover {
+  background: linear-gradient(to right, #218838, #1c7430);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.envio-form__button:disabled,
+.envio-form__button--disabled {
+  background-color: var(--gray-400);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.envio-form__message-error {
+  color: var(--accent-dark);
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.envio-form__message-success {
+  color: var(--primary);
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.envio-form__cotizacion-box {
+  margin-top: 1.5rem;
+  background-color: var(--gray-100);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  color: var(--gray-700);
+  box-shadow: var(--shadow);
+}

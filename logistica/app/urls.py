@@ -9,6 +9,11 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
     path('user-status/', views.user_status, name='user_status'),
+    path('cotizar-envio/', views.cotizar_envio, name='cotizar-envio'),
+    path('crear-envio/', views.crear_envio_view, name='crear-envio'),
+    path('envios-estado/', views.consultar_estado_envio, name='consulta-estado-envio'),
+    # Rutas de admin
+    path('obtener_envios/', views.obtener_envios, name='obtener_envios'),
     # Nuevas rutas para recuperación de contraseña
     path('password-reset/', views.password_reset_request, name='password_reset_request'),
     path('password-reset/confirm/<uuid:token>/', views.password_reset_confirm, name='password_reset_confirm'),

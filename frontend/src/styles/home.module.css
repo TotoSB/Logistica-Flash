@@ -657,3 +657,122 @@
       font-size: 2rem;
     }
   }
+
+  /* Estilos para el formulario de rastreo */
+.tracking_form {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 2rem auto 0;
+}
+
+.tracking_form h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.input_group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.input_group input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.input_group input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.input_group button {
+  padding: 0.75rem 1.5rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.input_group button:hover {
+  background-color: #2980b9;
+}
+
+/* Estilos para mensajes de error */
+.tracking_error {
+  color: #e74c3c;
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Estilos para los resultados */
+.tracking_result {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.tracking_result h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.tracking_result p {
+  margin: 0.5rem 0;
+  color: #34495e;
+  display: flex;
+}
+
+.tracking_result p strong {
+  display: inline-block;
+  width: 120px;
+  color: #2c3e50;
+}
+
+/* Estados del envío */
+.status_pendiente {
+  color: #f39c12;
+}
+
+.status_enviado {
+  color: #3498db;
+}
+
+.status_entregado {
+  color: #2ecc71;
+}
+
+.status_cancelado {
+  color: #e74c3c;
+}
+
+/* Animación de carga */
+.tracking_loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-left: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

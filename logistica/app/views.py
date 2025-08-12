@@ -12,7 +12,10 @@ from django.http import Http404
 from django.conf import settings
 from .models import Usuario, PasswordResetToken
 from .email_utils import send_welcome_email, send_password_reset_email, send_password_changed_notification
-
+from .models import Envios
+import uuid
+from django.core.mail import send_mail
+from django.conf import settings
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -256,3 +259,157 @@ def validate_reset_token(request, token):
     except Exception as e:
         return Response({'error': f'Error interno: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+@permission_classes([AllowAny])  # o [IsAuthenticated] si querés que sólo usuarios logueados puedan cotizar
+def cotizar_envio(request):
+    """
+    Calcula el costo estimado del envío según peso, medidas y franja seleccionada
+    """
+    try:
+        data = json.loads(request.body)
+
+        peso = float(data.get("peso", 0))
+        ancho = float(data.get("ancho", 0))
+        alto = float(data.get("alto", 0))
+        largo = float(data.get("largo", 0))
+        destino = data.get("destino")
+
+        
+        if not destino or peso <= 0 or ancho <= 0 or alto <= 0 or largo <= 0:
+            return Response({"error": "Datos inválidos"}, status=status.HTTP_400_BAD_REQUEST)
+
+        peso_volumetrico = (alto * ancho * largo) / 5000  # fórmula volumétrica estándar
+        peso_final = max(peso, peso_volumetrico)
+
+        
+        tarifas = {
+            "caba": {"base": 1000, "por_kg": 250},
+            "franja1": {"base": 1500, "por_kg": 300},
+            "franja2": {"base": 1800, "por_kg": 350},
+            "franja3": {"base": 2000, "por_kg": 400},
+        }
+
+        if destino not in tarifas:
+            return Response({"error": "Destino no válido"}, status=status.HTTP_400_BAD_REQUEST)
+
+        tarifa = tarifas[destino]
+        total = tarifa["base"] + (peso_final * tarifa["por_kg"])
+
+        return Response({
+            "costo_estimado": round(total, 2),
+            "peso_real": peso,
+            "peso_volumetrico": round(peso_volumetrico, 2),
+            "peso_final": round(peso_final, 2),
+            "detalle": f"Costo base: ${tarifa['base']} + ${tarifa['por_kg']}/kg × {round(peso_final, 2)}kg"
+        }, status=status.HTTP_200_OK)
+
+    except (ValueError, TypeError, KeyError, json.JSONDecodeError) as e:
+        return Response({"error": f"Error en los datos enviados: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def crear_envio_view(request):
+    try:
+        data = request.data
+
+        usuario_id = data.get("usuario")
+        destino = data.get("destino")
+        peso = data.get("peso")
+        ancho = data.get("ancho")
+        alto = data.get("alto")
+        largo = data.get("largo")
+
+        # Validar que vengan todos los campos necesarios
+        if not all([usuario_id, destino, peso, ancho, alto, largo]):
+            return Response({"error": "Todos los campos son requeridos"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            usuario = Usuario.objects.get(id=usuario_id)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Generar nro_seguimiento único (por ejemplo, UUID4 acortado)
+        nro_seguimiento = str(uuid.uuid4()).split('-')[0].upper()
+
+        # Estado por defecto
+        estado = "pendiente"
+
+        envio = Envios.objects.create(
+            usuario=usuario,
+            destino=destino,
+            nro_seguimiento=nro_seguimiento,
+            estado=estado,
+            peso=peso,
+            ancho=ancho,
+            alto=alto,
+            largo=largo
+        )
+
+        return Response({
+            "message": "Envío creado exitosamente",
+            "envio_id": envio.id,
+            "nro_seguimiento": envio.nro_seguimiento
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({"error": f"Error interno: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+from django.core.exceptions import ObjectDoesNotExist
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def consultar_estado_envio(request):
+    # Obtener el código de seguimiento del cuerpo de la petición
+    codigo_seguimiento = request.data.get('codigo_seguimiento')
+    
+    if not codigo_seguimiento:
+        return Response(
+            {"error": "Debe proporcionar un código de seguimiento"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        # Buscar el envío por código de seguimiento
+        envio = Envios.objects.get(nro_seguimiento=codigo_seguimiento)
+        
+        # Crear respuesta manualmente
+        datos_envio = {
+            'nro_seguimiento': envio.nro_seguimiento,
+            'estado': envio.estado,
+            'fecha_envio': envio.fecha_envio.strftime("%Y-%m-%d %H:%M:%S"),
+            'destino': envio.get_destino_display(),  # Muestra la versión legible del choice
+            'peso': str(envio.peso),
+            'dimensiones': f"{envio.ancho}x{envio.alto}x{envio.largo} cm"
+        }
+        
+        return Response(datos_envio, status=status.HTTP_200_OK)
+        
+    except ObjectDoesNotExist:
+        return Response(
+            {"error": "No se encontró ningún envío con ese código de seguimiento"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def obtener_envios(request):
+    try:
+        envios = Envios.objects.filter(usuario=request.user).order_by('-fecha_envio')
+        data = []
+        
+        for envio in envios:
+            data.append({
+                'id': envio.id,
+                'nro_seguimiento': envio.nro_seguimiento,
+                'estado': envio.estado,
+                'fecha_envio': envio.fecha_envio.strftime("%Y-%m-%d %H:%M:%S"),
+                'destino': envio.get_destino_display(),
+                'peso': str(envio.peso),
+                'dimensiones': f"{envio.ancho}x{envio.alto}x{envio.largo} cm"
+            })
+        
+        return Response(data, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+        return Response({'error': f'Error interno: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

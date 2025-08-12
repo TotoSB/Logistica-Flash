@@ -5,6 +5,9 @@ import { Link } from 'react-router-dom';
 function Home() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [trackingResult, setTrackingResult] = useState(null);
+  const [trackingError, setTrackingError] = useState('');
 
   useEffect(() => {
     // Verificar si hay un usuario guardado en localStorage
@@ -51,6 +54,38 @@ function Home() {
       setLoading(false);
     }
   };
+
+    const handleTrackSubmit = async (e) => {
+    e.preventDefault();
+    if (!trackingNumber.trim()) {
+      setTrackingError('Por favor ingresa un número de seguimiento');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/envios-estado/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ codigo_seguimiento: trackingNumber }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setTrackingResult(data);
+        setTrackingError('');
+      } else {
+        setTrackingError(data.error || 'Error al buscar el envío');
+        setTrackingResult(null);
+      }
+    } catch (error) {
+      setTrackingError('Error de conexión con el servidor');
+      setTrackingResult(null);
+    }
+  };
+
 
 
   const handleLogout = () => {
@@ -100,36 +135,37 @@ function Home() {
 
       <section className={classes.hero}>
         <div className={classes.container}>
-          <div className={classes.hero_content}>
-            <h1>Soluciones logísticas para hacer crecer tu negocio</h1>
-            <p>Optimizamos tu cadena de suministro con tecnología avanzada y una red global de distribución confiable.</p>
-            {/* {user ? (
-              <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#2ed573', color: 'white', borderRadius: '8px' }}>
-                <h3>✅ ¡Bienvenido de vuelta, {user.nombre_completo}!</h3>
-                <p>Email: {user.email}</p>
-                <p>Ahora puedes acceder a todos nuestros servicios</p>
-              </div>
-            ) : (
-              <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#ffeaa7', color: '#000', borderRadius: '8px' }}>
-                <h3>🔐 Inicia sesión para acceder a todos los servicios</h3>
-                <Link to="/register" style={{ color: '#0984e3', textDecoration: 'underline' }}>
-                  ¿No tienes cuenta? Regístrate aquí
-                </Link>
-              </div>
-            )} */}
-            <div className={classes.hero_buttons}>
-              <a href="#" className={classes.btn_primary}>Solicitar cotización</a>
-              <a href="#" className={classes.btn_outline}>Conocer más</a>
-            </div>
-          </div>
+          {/* ... (contenido hero existente) */}
+          
           <div className={classes.tracking_form}>
             <h2>Rastrea tu envío</h2>
-            <form>
+            <form onSubmit={handleTrackSubmit}>
               <div className={classes.input_group}>
-                <input type="text" placeholder="Ingresa tu número de seguimiento" />
+                <input 
+                  type="text" 
+                  placeholder="Ingresa tu número de seguimiento" 
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                />
                 <button type="submit" className={classes.btn_primary}>Rastrear</button>
               </div>
+              {trackingError && (
+                <p style={{ color: 'red', marginTop: '10px' }}>{trackingError}</p>
+              )}
             </form>
+            
+            {trackingResult && (
+              <div style={{ 
+                marginTop: '20px', 
+                padding: '15px', 
+                backgroundColor: '#f1f2f6', 
+                borderRadius: '8px',
+                color: '#2f3542'
+              }}>
+                <h3>Resultado del rastreo</h3>
+                <p><strong>Estado:</strong> {trackingResult.estado}</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

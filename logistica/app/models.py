@@ -26,6 +26,33 @@ class Usuario(AbstractUser):
         
     def __str__(self):
         return f"{self.nombre_completo} ({self.email})"
+    
+class Envios(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, verbose_name="Usuario")
+    destino = models.CharField(max_length=255, verbose_name="Destino", choices=[
+        ('caba', 'Capital Federal'),
+        ('franja1', 'Franja 1'),
+        ('franja2', 'Franja 2'),
+        ('franja3', 'Franja 3')])
+    nro_seguimiento = models.CharField(max_length=50, unique=True, verbose_name="Número de seguimiento")
+    fecha_envio = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de envío")
+    estado = models.CharField(max_length=50, choices=[
+        ('pendiente', 'Pendiente'),
+        ('enviado', 'Enviado'),
+        ('entregado', 'Entregado'),
+        ('cancelado', 'Cancelado')
+    ], default='pendiente', verbose_name="Estado del envío")
+    peso = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Peso (kg)")
+    ancho = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Ancho (cm)")
+    alto = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Alto (cm)")
+    largo = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Largo (cm)")
+    
+    class Meta:
+        verbose_name = "Envío"
+        verbose_name_plural = "Envíos"
+    
+    def __str__(self):
+        return f"Envío a {self.destino} - {self.estado}"
 
 
 class PasswordResetToken(models.Model):
