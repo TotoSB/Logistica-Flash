@@ -413,3 +413,38 @@ def obtener_envios(request):
     
     except Exception as e:
         return Response({'error': f'Error interno: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def avanzar_estado_envio(request, envio_id):
+    try:
+        envio = Envios.objects.get(id=envio_id, usuario=request.user)
+
+        # Definir el flujo de estados
+        flujo_estados = ['pendiente', 'enviado', 'entregado']
+
+        if envio.estado not in flujo_estados:
+            return Response({'error': 'Este envío no puede avanzar de estado.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        indice_actual = flujo_estados.index(envio.estado)
+
+        if indice_actual == len(flujo_estados) - 1:
+            return Response({'error': 'El envío ya está en el estado final.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Cambiar al siguiente estado
+        envio.estado = flujo_estados[indice_actual + 1]
+        envio.save()
+
+        return Response({
+            'mensaje': f"Estado del envío actualizado a '{envio.estado}'",
+            'nuevo_estado': envio.estado
+        }, status=status.HTTP_200_OK)
+
+    except Envios.DoesNotExist:
+        return Response({'error': 'Envío no encontrado o no pertenece al usuario.'},
+                        status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': f'Error interno: {str(e)}'},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)

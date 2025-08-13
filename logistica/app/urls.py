@@ -14,6 +14,8 @@ urlpatterns = [
     path('envios-estado/', views.consultar_estado_envio, name='consulta-estado-envio'),
     # Rutas de admin
     path('obtener_envios/', views.obtener_envios, name='obtener_envios'),
+    path('avanzar_envio/<int:envio_id>/', views.avanzar_estado_envio, name='avanzar_estado_envio'),
+
     # Nuevas rutas para recuperación de contraseña
     path('password-reset/', views.password_reset_request, name='password_reset_request'),
     path('password-reset/confirm/<uuid:token>/', views.password_reset_confirm, name='password_reset_confirm'),

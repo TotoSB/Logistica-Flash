@@ -1,0 +1,85 @@
+.adminContainer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.btnReverse {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  background-color: transparent;
+  border: 2px solid #007bff;
+  color: #007bff;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btnReverse:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.enviosList {
+  list-style: none;
+  padding: 0;
+}
+
+.envioItem {
+  background: #ffffff;
+  margin-bottom: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.envioInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.envioInfo strong {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.envioInfo span {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.btnAdvance {
+  padding: 0.4rem 0.8rem;
+  background-color: #28a745;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.btnAdvance:hover {
+  background-color: #218838;
+}
+
+.errorMessage {
+  color: red;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}

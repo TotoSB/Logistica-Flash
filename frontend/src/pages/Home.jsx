@@ -109,7 +109,15 @@ function Home() {
               <li><a href="#como_funciona">Cómo Funciona</a></li>
               <li><a href="#estadisticas">Estadísticas</a></li>
               <li><a href="#contacto">Contacto</a></li>
+              {user !== null && (
+                <Link to="/envio-form">Hacer envío</Link>
+              )}
+              {/* Mostrar solo si es admin */}
+              {user?.is_staff && (
+                <Link to="/admin">Panel admin</Link>
+              )}
             </ul>
+
             {user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ color: '#000' }}>Hola, {user.nombre_completo}</span>
